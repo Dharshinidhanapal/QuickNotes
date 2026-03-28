@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickNotes</title>
+<style>
+    body {
+        background-color: rgb(208, 108, 171);
+        font-family:cursive;
+        text-align: center;
+        padding: 20px;
+        margin: 0;
+    }
+    h1 { color: #333; }
+    #noteForm {
+        margin-bottom: 15px;
+    }
+    input, textarea, select {
+        padding: 5px;
+        margin: 3px;
+        width: 220px;
+        box-sizing: border-box;
+    }
+    button {
+        padding: 5px 10px;
+        margin: 3px;
+        cursor: pointer;
+    }
+    #notesContainer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px; /* spacing between notes */
+    }
+    .note {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        width: 200px;
+        height: 150px; /* fixed height */
+        padding: 10px 10px 30px 10px; /* bottom padding for buttons */
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        position: relative;
+        word-wrap: break-word;
+        white-space: pre-wrap; /* preserve line breaks */
+        overflow: hidden; /* prevent note box from growing */
+    }
+    .note-content {
+        flex: 1;
+        overflow-y: auto; /* scroll if content is too long */
+        margin-top: 5px;
+        text-align: left;
+    }
+    .btn {
+        position: absolute;
+        top: 5px;
+        padding: 2px 5px;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+        color: rgb(209, 232, 229);
+        font-size: 12px;
+    }
+    .editBtn { right: 5px; background: rgb(10, 112, 2); }
+    .deleteBtn { right:190px; background: red; }
+</style>
+</head>
+<body>
+
+<h1>Template Notepad App</h1>
+<p style="font-size:12px; color:#3d3c3c;">Note: Your notes are saved only on this device and will not appear on other devices.</p>
+<div id="noteForm">
+    <select id="template">
+        <option value="custom">Custom Note</option>
+        <option value="todo">Todo</option>
+        <option value="diary">Diary</option>
+        <option value="shopping">Shopping</option>
+    </select>
+    <br>
+    <input type="text" id="title" placeholder="Note Title">
+    <br>
+    <textarea id="content" placeholder="Note Content"></textarea>
+    <br>
+    <select id="color">
+        <option value="yellow">Yellow</option>
+        <option value="lightblue">Light Blue</option>
+        <option value="lightgreen">Light Green</option>
+        <option value="pink">Pink</option>
+        <option value="orange">Orange</option>
+    </select>
+    <br>
+    <button onclick="addOrUpdateNote()">Add Note</button>
+</div>
+
+<div id="notesContainer"></div>
+
+<script>
+let notes = JSON.parse(localStorage.getItem('notes')) || [];
+let editIndex = -1;
+
+// Templates
+const templates = {
+    todo: {title: 'New Todo', content: '1. \n2. \n3.'},
+    diary: {title: 'Diary Entry', content: 'Date: \n\nWrite your thoughts...'},
+    shopping: {title: 'Shopping List', content: '1. \n2. \n3.'}
+};
+
+// Render notes
+function renderNotes() {
+    const container = document.getElementById('notesContainer');
+    container.innerHTML = '';
+    notes.forEach((note, index) => {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'note';
+        noteDiv.style.backgroundColor = note.color;
+
+        noteDiv.innerHTML = `
+            <strong>${note.title}</strong>
+            <div class="note-content">${note.content.replace(/\n/g,'<br>')}</div>
+            <button class="btn editBtn" onclick="editNote(${index})">Edit</button>
+            <button class="btn deleteBtn" onclick="deleteNote(${index})">X</button>
+        `;
+        container.appendChild(noteDiv);
+    });
+}
+
+// Save notes to localStorage
+function saveNotes() {
+    localStorage.setItem('notes', JSON.stringify(notes));
+}
+
+// Add or update note
+function addOrUpdateNote() {
+    const title = document.getElementById('title').value.trim();
+    const content = document.getElementById('content').value.trim();
+    const color = document.getElementById('color').value;
+
+    if (!title && !content) {
+        alert('Please add title or content!');
+        return;
+    }
+
+    if (editIndex === -1) {
+        notes.push({title, content, color});
+    } else {
+        notes[editIndex] = {title, content, color};
+        editIndex = -1;
+        document.querySelector('#noteForm button').innerText = 'Add Note';
+    }
+
+    saveNotes();
+    renderNotes();
+    clearForm();
+}
+
+// Edit note
+function editNote(index) {
+    document.getElementById('title').value = notes[index].title;
+    document.getElementById('content').value = notes[index].content;
+    document.getElementById('color').value = notes[index].color;
+    editIndex = index;
+    document.querySelector('#noteForm button').innerText = 'Update Note';
+}
+
+// Delete note
+function deleteNote(index) {
+    if (confirm('Delete this note?')) {
+        notes.splice(index, 1);
+        saveNotes();
+        renderNotes();
+    }
+}
+
+// Clear form
+function clearForm() {
+    document.getElementById('title').value = '';
+    document.getElementById('content').value = '';
+    document.getElementById('template').value = 'custom';
+}
+
+// Template selection
+document.getElementById('template').addEventListener('change', function() {
+    const val = this.value;
+    if (val !== 'custom' && templates[val]) {
+        document.getElementById('title').value = templates[val].title;
+        document.getElementById('content').value = templates[val].content;
+    } else {
+        document.getElementById('title').value = '';
+        document.getElementById('content').value = '';
+    }
+});
+
+// Initial render
+renderNotes();
+</script>
+
+</body>
+</html>
