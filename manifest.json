@@ -1,0 +1,21 @@
+{
+  "name": "QuickNotes",
+  "short_name": "QuickNotes",
+  "description": "A simple and colorful notes app to create, edit, and manage your daily notes easily.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#d06cae",
+  "theme_color": "#d06cae",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
